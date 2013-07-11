@@ -29,7 +29,7 @@ let printEval trans context x =
     match x with
       | Success(result, _, _)   -> 
         printfn "%s" (printtm context result)
-        printfn "↓%A" trans
+        printfn "↓"
         printfn "%s" (printtm context (trans context result))
         printfn "----------------------------"
       | Failure(errorMsg, _, _) -> 
@@ -39,7 +39,7 @@ let printEval trans context x =
 let evalTerm str =
   let context : Context =  []
   printfn "%A" str
-  printfn "↓(parse)"
+  printfn "↓"
   str |> runParserOnString pTerm context ""
       |> printEval eval context
 

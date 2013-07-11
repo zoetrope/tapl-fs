@@ -1,12 +1,13 @@
 ﻿module Main
 
 open FParsec
+open Microsoft.FSharp.Reflection
 
 let printTerm trans x =
     match x with
       | Success(result, _, _)   -> 
         printfn "%A" result
-        printfn "↓%A" trans
+        printfn "↓"
         try
             printfn "%A" (trans result)
         with
@@ -18,7 +19,7 @@ let printTerm trans x =
 
 let typeofTerm str =
   printfn "%A" str
-  printfn "↓(parse)"
+  printfn "↓"
   str |> run pTerm
       |> printTerm typeof
 

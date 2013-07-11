@@ -6,7 +6,7 @@ let printEval trans x =
     match x with
       | Success(result, _, _)   -> 
         printfn "%A" result
-        printfn "↓%A" trans
+        printfn "↓"
         printfn "%A" (trans result)
         printfn "----------------------------"
       | Failure(errorMsg, _, _) -> 
@@ -15,7 +15,7 @@ let printEval trans x =
 
 let evalTerm str =
   printfn "%A" str
-  printfn "↓(parse)"
+  printfn "↓"
   str |> run pTerm
       |> printEval eval
 

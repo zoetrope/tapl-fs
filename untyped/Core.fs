@@ -12,8 +12,8 @@ let ``↑`` d t =
     | TmApp (t1, t2) -> TmApp (walk c t1, walk c t2)
   in walk 0 t
 
-// 代入： 項 t における変数番号 j への項 s の代入 [j → s] t
-let ``→`` j s t =
+// 代入： 項 t における変数番号 j への項 s の代入 [j ↦ s] t
+let ``↦`` j s t =
   let rec walk c t =
     match t with
     | TmVar (x, n) ->  if x = (j + c) then ``↑`` c s else TmVar (x, n)
@@ -22,7 +22,7 @@ let ``→`` j s t =
   in walk 0 t
 
 // β簡約： 項 s を +1 シフト、項 s を 項 t に代入、全体を -1 シフト
-let termSubstTop s t = ``↑`` (-1) (``→`` 0 (``↑`` 1 s) t)
+let termSubstTop s t = ``↑`` (-1) (``↦`` 0 (``↑`` 1 s) t)
 
 
 
