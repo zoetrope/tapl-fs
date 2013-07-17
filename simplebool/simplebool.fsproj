@@ -5,12 +5,12 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>d71b88b8-7e64-4812-8e06-76d29e8bef8a</ProjectGuid>
+    <ProjectGuid>35e56e0f-67f5-48fb-a199-ec207e72e351</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>tyarith</RootNamespace>
-    <AssemblyName>tyarith</AssemblyName>
+    <RootNamespace>simplebool</RootNamespace>
+    <AssemblyName>simplebool</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Name>tyarith</Name>
+    <Name>simplebool</Name>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\tyarith.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\simplebool.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <NoWarn>40</NoWarn>
   </PropertyGroup>
@@ -35,7 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\tyarith.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\simplebool.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
@@ -44,19 +44,11 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>
+    <Compile Include="Ast.fs" />
+    <Compile Include="Parser.fs" />
+    <Compile Include="Main.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
-    <Compile Include="..\arith\Ast.fs">
-      <Link>Ast.fs</Link>
-    </Compile>
-    <Compile Include="..\arith\Parser.fs">
-      <Link>Parser.fs</Link>
-    </Compile>
-    <Compile Include="..\arith\Core.fs">
-      <Link>Core.fs</Link>
-    </Compile>
-    <Compile Include="Typing.fs" />
-    <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FParsec">
