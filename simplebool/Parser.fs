@@ -31,7 +31,7 @@ let index2name ctx x =
   with
   | :? ArgumentException -> raise NoMatchError
 
-// ただの関数ではなくパーサに変更。パース失敗時にfailを返したいから。
+// untypedではintを返す関数だったけどParserを返すように変更。パース失敗時にfailを返したいから。
 let rec name2index ctx x =
   match ctx with
   | [] -> fail "No match error"
@@ -42,13 +42,13 @@ let rec name2index ctx x =
         return   1 + index
     }
     
-let pTrue = stringReturn "true" TmTrue
-let pFalse = stringReturn "false" TmFalse
+let pTrue = (stringReturn "true" TmTrue) .>> spaces
+let pFalse = (stringReturn "false" TmFalse) .>> spaces
 let pBool = stringReturn "Bool" TyBool
 
 let pTmVar = 
     parse {
-        let! name = identifier
+        let! name = identifier .>> spaces
         let! ctx = getUserState
         let! index = name2index ctx name 
         return TmVar(index, ctxlength ctx)
@@ -57,7 +57,7 @@ let pTmVar =
 let rec pType = pArrowType
 and pAType = pParenType <|> pBool
 
-and pArrow = chainl1 pAType (pstring "->" >>% fun x1 x2 -> TyArr(x1, x2))
+and pArrow = chainr1 pAType (pstring "->" >>% fun x1 x2 -> TyArr(x1, x2))
 
 and pArrowType = attempt(pArrow) <|> pAType
 
@@ -66,12 +66,17 @@ and pParenType = parse{
     let! t = pType
     let! _ = pstring ")"
     return t}
-
-
+    
 let rec pTerm = pAppTerm <|> pLambda <|> pIf
 
-// TODO: if x false then みたいなのがパースできない。falseの後ろのスペースを適用のスペースとして処理されてしまう
-and pAppTerm = chainl1 pATerm (pstring " " >>% fun e1 e2 -> TmApp(e1,e2))
+// chainl1を使うと"if x false then・・・"みたいなのがパースできない。falseの後ろのスペースが適用のスペースとして処理されてしまう。
+// chainl1の代わりに、many1でパースしてfoldでくっつける。
+and pAppTerm = parse{
+    let! items = many1 (pATerm)
+    match items with
+    | [] -> raise NoMatchError // 要素がない場合は many1 で失敗するからここにはこないはず。
+    | x::[] -> return x
+    | x::rest -> return Seq.fold (fun t1 t2 -> TmApp(t1, t2)) x rest}
 
 and pATerm = pParen <|> attempt(pTmVar) <|> pTrue <|> pFalse
 
@@ -110,6 +115,5 @@ and pParen = parse{
     let! _ = pstring "("
     let! t = pTerm
     let! _ = pstring ")"
+    do! spaces
     return t}
-
-

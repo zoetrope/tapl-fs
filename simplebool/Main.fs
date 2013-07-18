@@ -25,11 +25,12 @@ let evalTerm str =
 //evalTerm "true"
 
 //evalTerm "true true false"
+//evalTerm "true true false "
 
 //evalTerm "λ x:Bool.x "
-evalTerm "(λ x:Bool->Bool. if x false then true else false)"
+//evalTerm "(λ x:Bool->Bool. if x false then true else false)"
 //evalTerm "(λ x:Bool. if x then false else true)"
-//evalTerm "(λ x:Bool->Bool. if x false then true else false) (λ x:Bool. if x then false else true)"
+evalTerm "(λ x:Bool->Bool. if x false then true else false) (λ x:Bool. if x then false else true)"
 System.Console.ReadLine() |> ignore
 
 
