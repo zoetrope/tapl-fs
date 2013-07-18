@@ -31,10 +31,10 @@ let index2name ctx x =
   with
   | :? ArgumentException -> raise NoMatchError
 
-
+// ただの関数ではなくパーサに変更。パース失敗時にfailを返したいから。
 let rec name2index ctx x =
   match ctx with
-  | [] -> fail "NoMatchError"
+  | [] -> fail "No match error"
   | (y, _) :: rest -> parse{ 
       if y = x then return 0
       else
@@ -70,11 +70,10 @@ and pParenType = parse{
 
 let rec pTerm = pAppTerm <|> pLambda <|> pIf
 
-and pAppTerm = attempt(pATerm) <|> pApp
+// TODO: if x false then みたいなのがパースできない。falseの後ろのスペースを適用のスペースとして処理されてしまう
+and pAppTerm = chainl1 pATerm (pstring " " >>% fun e1 e2 -> TmApp(e1,e2))
 
 and pATerm = pParen <|> attempt(pTmVar) <|> pTrue <|> pFalse
-
-and pApp = chainl1 pATerm (spaces1 >>% fun e1 e2 -> TmApp(e1,e2))
 
 and pLambda = parse {
     let! _ = pstring "λ"
