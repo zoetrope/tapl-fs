@@ -9,7 +9,7 @@ open FParsec.CharParsers
 
 exception NoMatchError
 
-type binding = | NameBind
+type binding = | NameBind | VarBind of ty
 
 let addbinding ctx x bind = (x, bind) :: ctx
   
@@ -85,11 +85,11 @@ and pLambda = parse {
     do! spaces
     let! name = identifier
     let! ctx = getUserState
-    do! updateUserState(addname name)
     do! spaces
     let! _ = pstring ":"
     do! spaces
     let! typ = pType
+    do! updateUserState(addname name)
     do! spaces
     let! _ = pstring "."
     do! spaces
