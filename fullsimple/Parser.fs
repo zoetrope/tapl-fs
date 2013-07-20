@@ -7,6 +7,13 @@ open FParsec
 open FParsec.Primitives
 open FParsec.CharParsers
 
+
+let identifier =
+    let isIdentifierFirstChar c = isLetter c || c = '_'
+    let isIdentifierChar c = isLetter c || isDigit c || c = '_'
+    (many1Satisfy2L isIdentifierFirstChar isIdentifierChar "identifier") .>> spaces
+
+(*
 let pTrue = (stringReturn "true" TmTrue) .>> spaces
 let pFalse = (stringReturn "false" TmFalse) .>> spaces
 
@@ -15,13 +22,6 @@ let pStringType = stringReturn "String" TyString
 let pUnitType = stringReturn "Unit" TyString
 let pFloatType = stringReturn "Float" TyString
 let pNatType = stringReturn "Nat" TyString
-
-let identifier =
-    let isIdentifierFirstChar c = isLetter c || c = '_'
-    let isIdentifierChar c = isLetter c || isDigit c || c = '_'
-    many1Satisfy2L isIdentifierFirstChar isIdentifierChar "identifier"
-
-
 
 let rec pType = pArrowType
 and pAType = pParenType <|>
@@ -144,15 +144,31 @@ and pCase = parse {
     let! t1 = pAppTerm
     return (v1, (v2, t1))}
 
-and pFields = [] <|> pNEFields
-    
-and pNEFields = chainr1 pField (pstring "," >>% fun x1 x2 -> (x1, i)::(x2, i+1))
 
-and pField = parse{
-        let! f = identifier 
-        let! _ = pstring "="
-        let! t = pTerm
-        return (f,t)} <|>
-    parse{
-        let! t = pTerm
-        return (string_of_int i, t)}
+*)
+let pTerm = identifier
+
+
+
+let pKeyValueField = parse {
+    let! f = identifier 
+    let! _ = pstring "=" .>> spaces
+    let! t = pTerm
+    return (f, t)}
+
+let pValueField = parse {
+    let! t = pTerm
+    return ("", t)}
+
+let pField = attempt(pKeyValueField) <|> pValueField
+
+let addIndex i t =
+    match t with
+    | ("", v) -> ((i+1).ToString(), v)
+    | (k, v) -> (k, v)
+
+let pFields : Parser<(string * string) list, unit>= parse{
+    let! fields = sepBy pField (pstring "," .>> spaces)
+    match fields with
+    | [] -> return []
+    | x -> return x |> List.mapi(fun i t -> addIndex i t)}

@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Ast.fs" />
     <Compile Include="Parser.fs" />
+    <Compile Include="Main.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>
