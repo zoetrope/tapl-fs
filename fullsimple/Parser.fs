@@ -145,12 +145,15 @@ and pFieldTypes = parse{
     | [] -> return []
     | x -> return x |> List.mapi(fun i t -> addIndex i t)}
 
-(*
 
-    
 let rec pTerm = pAppTerm <|> pIf <|> pCaseOfCases <|> pLambda <|> pLet <|> pLetRec
 
-and pCaseOfCases = "case" pTerm pCases
+and pCaseOfCases = parse {
+    let! _ = pstring "case" .>> spaces1
+    let! t = pTerm .>> spaces1
+    let! _ = pstring "of" .>> spaces1
+    let! cases = pCases
+    return TmCase(t,cases)}
 
 and pLet = parse{
     let! _ = pstring "let" .>> spaces1
@@ -173,19 +176,6 @@ and pLetRec = parse {
     let! t2 = pTerm
     return TmLet(v,TmFix(TmAbs(v,t,t1)),t2)}
 
-and pAppTerm = pPathTerm <|>
-    pAppTerm pPathTerm <|> 
-    pFix pPathTerm <|> 
-    pTimesFloat pPathTerm pPathTerm <|> 
-    pSucc pPathTerm <|> 
-    pPred pPathTerm <|> 
-    pIsZero pPathTerm
-
-and pAscribeTerm = pATerm "as" pType <|> pATerm
-
-and pPathTerm = pPathTerm "." identifier <|> pPathTerm "." pint32 <|> pAscribeTerm
-
-and pTermSeq = pTerm <|> pTerm ";" pTermSeq
 
 
 and pLambda = parse {
@@ -227,10 +217,51 @@ and pParen = parse{
     return t}
 
 
-*)
-
-let rec pTerm = pAppTerm
 and pAppTerm = 
+    pApp <|> //TODO: ここおかしい？
+    pFix <|> 
+    pTimesFloat <|> 
+    pSucc <|> 
+    pPred <|> 
+    pIsZero
+
+and pApp = parse{
+    let! items = many1 (pPathTerm)
+    match items with
+    | [] -> raise NoMatchError
+    | x::[] -> return x
+    | x::rest -> return Seq.fold (fun t1 t2 -> TmApp(t1, t2)) x rest}
+
+and pFix = parse {
+    let! _ = pstring "fix" .>> spaces
+    let! path = pPathTerm
+    return TmFix(path)}
+
+and pTimesFloat = parse {
+    let! _ = pstring "timesfloat" .>> spaces
+    let! path1 = pPathTerm
+    let! path2 = pPathTerm
+    return TmTimesfloat(path1, path2)}
+    
+and pSucc = parse {
+    let! _ = pstring "succ"
+    do! spaces
+    let! t =  pPathTerm
+    return TmSucc(t)}
+
+and pPred = parse {
+    let! _ = pstring "pred"
+    do! spaces
+    let! t =  pPathTerm
+    return TmPred(t)}
+
+and pIsZero = parse {
+    let! _ = pstring "iszero"
+    do! spaces
+    let! t =  pPathTerm
+    return TmIsZero(t)}
+
+and pATerm = 
     pParenTermSeq <|>
     pInert <|>
     pTrue <|>
@@ -243,6 +274,25 @@ and pAppTerm =
     pFloatV
 
     
+and pAscribeTerm = attempt(parse {
+    let! t = pATerm
+    let! _ = pstring "as" .>> spaces1
+    let! typ = pType
+    return TmAscribe(t,typ)}) <|> pATerm
+
+and pPathTerm = 
+    attempt(pProj) <|> 
+    pAscribeTerm
+
+and pProj = attempt(parse {
+    let! path = pPathTerm //TODO: これはまずそう
+    let! _ = pstring "."
+    let! i = pint32
+    return TmProj(path, i.ToString())}) <|> parse {
+    let! path = pPathTerm
+    let! _ = pstring "."
+    let! v = identifier
+    return TmProj(path, v)}
 
 // これではaddnameが1つ多い。
 //and pTermSeq = chainr1 (pTerm >>= fun t -> updateUserState(fun us -> addname "_" us) >>% t) (pstring ";" >>% fun x1 x2 -> TmApp(x1, TmAbs("_", TyUnit, x2)))
