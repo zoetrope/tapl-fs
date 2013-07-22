@@ -35,4 +35,8 @@ evalTerm pTerm "{key1=1,key2=2,3}"
 
 
 evalTerm pTerm "(true;true;false;true)"
+
+evalTerm pProj "true.1.2.3"
+
 System.Console.ReadLine() |> ignore
+

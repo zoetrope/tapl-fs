@@ -218,7 +218,7 @@ and pParen = parse{
 
 
 and pAppTerm = 
-    pApp <|> //TODO: ここおかしい？
+    attempt(pApp) <|> //TODO: ここおかしい？
     pFix <|> 
     pTimesFloat <|> 
     pSucc <|> 
@@ -284,8 +284,15 @@ and pPathTerm =
     attempt(pProj) <|> 
     pAscribeTerm
 
+//TODO: シンプルに書き換える
+and pint32_to_string = parse {
+    let! i = pint32
+    return i.ToString()}
+
+// 循環してるのでこれはダメ
+(*
 and pProj = attempt(parse {
-    let! path = pPathTerm //TODO: これはまずそう
+    let! path = pPathTerm
     let! _ = pstring "."
     let! i = pint32
     return TmProj(path, i.ToString())}) <|> parse {
@@ -293,6 +300,14 @@ and pProj = attempt(parse {
     let! _ = pstring "."
     let! v = identifier
     return TmProj(path, v)}
+*)
+and pProj = parse {
+    let! x = pAscribeTerm
+    let! _ = pstring "."
+    let! vs = sepBy (pint32_to_string <|> identifier) (pstring ".")
+    return Seq.fold (fun x1 x2 -> TmProj(x1,x2)) x vs}
+
+
 
 // これではaddnameが1つ多い。
 //and pTermSeq = chainr1 (pTerm >>= fun t -> updateUserState(fun us -> addname "_" us) >>% t) (pstring ";" >>% fun x1 x2 -> TmApp(x1, TmAbs("_", TyUnit, x2)))
